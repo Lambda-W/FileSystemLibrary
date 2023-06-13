@@ -7,7 +7,7 @@
 #include "CoreMinimal.h"
 
 
-class DialogManager
+class FILESYSTEMLIBRARY_API DialogManager
 {
 
 public:
