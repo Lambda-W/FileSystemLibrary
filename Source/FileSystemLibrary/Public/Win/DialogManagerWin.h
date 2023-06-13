@@ -10,7 +10,7 @@
 
 
 
-class DialogManagerWin : public DialogManager
+class FILESYSTEMLIBRARY_API DialogManagerWin : public DialogManager
 {
 public:
 	virtual bool OpenFileDialog(const void* ParentWindowHandle, const FString& DialogTitle, const FString& DefaultPath, const FString& DefaultFile, const FString& FileTypes, bool MultipleFiles, TArray<FString>& OutFilenames) override;
