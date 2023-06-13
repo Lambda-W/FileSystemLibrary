@@ -11,10 +11,15 @@
 
 #include <string>
 
-#include "CoreMinimal.h"
 #include "DialogManager.h"
+#if PLATFORM_WINDOWS
 #include "Win/DialogManagerWin.h"
+#endif
+#if PLATFORM_MAC
 #include "Mac/DialogManagerMac.h"
+#endif
+
+#include "CoreMinimal.h"
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
 #include "HAL/FileManager.h"
@@ -28,7 +33,7 @@
 #include "FileSystemLibraryBPLibrary.generated.h"
 
 USTRUCT(BlueprintType)
-struct FPathProperties
+struct FILESYSTEMLIBRARY_API FPathProperties
 {
 	GENERATED_BODY()
 
@@ -72,7 +77,7 @@ struct FPathProperties
 };
 
 UCLASS()
-class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
+class FILESYSTEMLIBRARY_API UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_UCLASS_BODY()
 
@@ -87,7 +92,7 @@ class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 		@param	WorkingDirectory		Directory to start the executable in (required UseWorkingDirectory = true).
 		*/
 		UFUNCTION(BlueprintCallable, meta = (DisplayName = "CreateProcess", Keywords = "process create execute"), Category = "FileSystemLibrary")
-		static FORCEINLINE bool CreateProcess(FString PathToExecutable, FString Arguments, bool LaunchDetached, bool LaunchedHidden, bool LaunchReallyHidden, int PriorityModifier, bool UseWorkingDirectory, FString WorkingDirectory)
+		static bool CreateProcess(FString PathToExecutable, FString Arguments, bool LaunchDetached, bool LaunchedHidden, bool LaunchReallyHidden, int PriorityModifier, bool UseWorkingDirectory, FString WorkingDirectory)
 	{
 		const TCHAR* tFilename = *PathToExecutable;
 		const TCHAR* tArguments = *Arguments;
@@ -134,7 +139,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 	@param PathToFile The path to the file to verify (including extension)
 	*/
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "VerifyFile", Keywords = "FileSystemLibrary"), Category = "System File Operations")
-	static FORCEINLINE bool VerifyFile(FString PathToFile = "")
+	static bool VerifyFile(FString PathToFile = "")
 	{
 		IPlatformFile &PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 
@@ -154,7 +159,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 	@param	DestinationFilePath		Path to copy the file to (including filename and extension).
 	*/
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "CopyFile", Keywords = "FileSystemLibrary"), Category = "System File Operations")
-	static FORCEINLINE bool CopyFile(FString PathToFile, FString DestinationFilePath = "")
+	static bool CopyFile(FString PathToFile, FString DestinationFilePath = "")
 	{
 
 		IPlatformFile &PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
@@ -176,7 +181,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 	@param	DestinationFilePath		Path to move the file to (including filename and extension).
 	*/
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "MoveFile", Keywords = "FileSystemLibrary"), Category = "System File Operations")
-	static FORCEINLINE bool MoveFile(FString PathToFile, FString DestinationFilePath = "")
+	static bool MoveFile(FString PathToFile, FString DestinationFilePath = "")
 	{
 
 		IPlatformFile &PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
@@ -198,7 +203,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 	@param	NewFileName		New name for the file (including extension).
 	*/
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "RenameFile", Keywords = "FileSystemLibrary"), Category = "System File Operations")
-	static FORCEINLINE bool RenameFile(FString PathToFile, FString NewFileName = "")
+	static bool RenameFile(FString PathToFile, FString NewFileName = "")
 	{
 		FString Path = FPaths::GetPath(PathToFile);
 		FString NewPathToFile = Path + "\\" + NewFileName;
@@ -215,7 +220,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 	@param PathToFile	Path to the file to delete (including extension).
 	*/
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "DeleteFile", Keywords = "FileSystemLibrary"), Category = "System File Operations")
-	static FORCEINLINE bool DeleteFile(FString PathToFile)
+	static bool DeleteFile(FString PathToFile)
 	{
 		IPlatformFile &PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 
@@ -239,7 +244,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 	@param CreateDirectory	If true, the directory will be created if it doesn't exist.
 	*/
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "VerifyAndCreateDirectory", Keywords = "FileSystemLibrary"), Category = "System Directory Operations")
-	static FORCEINLINE bool VerifyAndCreateDirectory(const FString &PathToDirectory = "", bool CreateDirectory = true)
+	static bool VerifyAndCreateDirectory(const FString &PathToDirectory = "", bool CreateDirectory = true)
 	{
 		IPlatformFile &PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 
@@ -270,7 +275,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 @param PathToDirectory	Path to the directory to verify.
 */
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "VerifyDirectory", Keywords = "FileSystemLibrary"), Category = "System Directory Operations")
-	static FORCEINLINE bool VerifyDirectory(const FString &PathToDirectory = "")
+	static bool VerifyDirectory(const FString &PathToDirectory = "")
 	{
 		IPlatformFile &PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 
@@ -289,7 +294,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 	@param PathToDirectory The path to the directory to delete.
 	*/
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "DeleteDirectory", Keywords = "FileSystemLibrary"), Category = "System Directory Operations")
-	static FORCEINLINE bool DeleteDirectory(FString PathToDirectory = "")
+	static bool DeleteDirectory(FString PathToDirectory = "")
 	{
 		IPlatformFile &PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 
@@ -314,7 +319,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 	@param	AllowOvewrite		If true, files that already exist in the destination path will be overwritten.
 	*/
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "CopyDirectory", Keywords = "FileSystemLibrary"), Category = "System Directory Operations")
-	static FORCEINLINE bool CopyDirectory(FString PathToDirectory = "", FString NewPathToDirectory = "", bool AllowOvewrite = true)
+	static bool CopyDirectory(FString PathToDirectory = "", FString NewPathToDirectory = "", bool AllowOvewrite = true)
 	{
 		IPlatformFile &PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 
@@ -342,7 +347,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 	@param	AllowOvewrite		If true, files that already exist in the destination path will be overwritten.
 	*/
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "MoveDirectory", Keywords = "FileSystemLibrary"), Category = "System Directory Operations")
-	static FORCEINLINE bool MoveDirectory(FString PathToDirectory = "", FString NewPathToDirectory = "", bool AllowOvewrite = true)
+	static bool MoveDirectory(FString PathToDirectory = "", FString NewPathToDirectory = "", bool AllowOvewrite = true)
 	{
 		if (CopyDirectory(PathToDirectory, NewPathToDirectory, AllowOvewrite))
 		{
@@ -361,7 +366,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 	@return	Properties	The file's property.
 	*/
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GetFileOrDirectoryProperties", Keywords = "FileSystemLibrary"), Category = "File System Library")
-	static FORCEINLINE bool GetFileOrDirectoryProperties(FPathProperties &Properties, FString Path = "")
+	static bool GetFileOrDirectoryProperties(FPathProperties &Properties, FString Path = "")
 	{
 		FFileStatData StatData;
 
@@ -392,7 +397,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 	@return	FileSizeBytes	The file's size in bytes (multiply by 1 000 000 to get the result in Mb).
 	*/
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GetFileOrDirectorySize", Keywords = "FileSystemLibrary"), Category = "File System Library")
-	static FORCEINLINE bool GetFileOrDirectorySize(int &FileSizeBytes, FString Path = "")
+	static bool GetFileOrDirectorySize(int &FileSizeBytes, FString Path = "")
 	{
 		FPathProperties Properties;
 
@@ -412,7 +417,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 	@return	Files					The files found in the specific directory.
 	*/
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GetFilesInDirectory", Keywords = "FileSystemLibrary"), Category = "File System Library")
-	static FORCEINLINE bool GetFilesInDirectory(TArray<FString> &Files, FString PathToDirectory, FString ExtensionFilter, bool OnlyReturnFilenames)
+	static bool GetFilesInDirectory(TArray<FString> &Files, FString PathToDirectory, FString ExtensionFilter, bool OnlyReturnFilenames)
 	{
 		IPlatformFile &PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 
@@ -462,7 +467,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 	@return	Files					The files found in the specific directory.
 	*/
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GetFilesRecursivelyInDirectory", Keywords = "FileSystemLibrary"), Category = "File System Library")
-		static FORCEINLINE bool GetFilesRecursivelyInDirectory(TArray<FString> &Files, FString PathToDirectory, FString ExtensionFilter, bool OnlyReturnFilenames)
+		static bool GetFilesRecursivelyInDirectory(TArray<FString> &Files, FString PathToDirectory, FString ExtensionFilter, bool OnlyReturnFilenames)
 	{
 		IPlatformFile &PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 
@@ -510,7 +515,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 	@return	Folders		If true, will only return the filenames (without the extension).
 	*/
 	//UFUNCTION(BlueprintPure, meta = (DisplayName = "GetFoldersInDirectory", Keywords = "FileSystemLibrary"), Category = "File System Library folder")
-		static FORCEINLINE bool GetFoldersInDirectory(TArray<FString> &Folders, FString Path)
+		static bool GetFoldersInDirectory(TArray<FString> &Folders, FString Path)
 	{
 			TArray<FString> ReturnFolders;
 
@@ -536,7 +541,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 	@return	FileContent	The file's content.
 	*/
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "LoadTextFileToStringArray", Keywords = "FileSystemLibrary"), Category = "SystemFile I/O")
-	static FORCEINLINE bool LoadTextFileToStringArray(TArray<FString> &FileContent, FString PathToFile)
+	static bool LoadTextFileToStringArray(TArray<FString> &FileContent, FString PathToFile)
 	{
 		// Does the file exist?
 		if (VerifyFile(*PathToFile))
@@ -563,7 +568,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 	@param	InsertAtIndex	Line number to insert to content at.
 	*/
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "InsertStringArrayToFile", Keywords = "FileSystemLibrary"), Category = "SystemFile I/O")
-	static FORCEINLINE bool InsertStringArrayToFile(FString PathToFile, TArray<FString> FileContent, int InsertAtIndex)
+	static bool InsertStringArrayToFile(FString PathToFile, TArray<FString> FileContent, int InsertAtIndex)
 	{
 		TArray<FString> ReturnFileContent;
 
@@ -585,7 +590,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 	@return	FileContent		The file's content.
 	*/
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "LoadTextFileToString", Keywords = "FileSystemLibrary"), Category = "SystemFile I/O")
-	static FORCEINLINE bool LoadTextFileToString(FString &FileContent, FString PathToFile)
+	static bool LoadTextFileToString(FString &FileContent, FString PathToFile)
 	{
 		// Does the file exist?
 		if (VerifyFile(*PathToFile))
@@ -618,7 +623,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 	@param FileContent	FileContent	The file's content.
 	*/
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "SaveStringArrayToFile", Keywords = "FileSystemLibrary"), Category = "SystemFile I/O")
-	static FORCEINLINE bool SaveStringArrayToFile(FString PathToFile, TArray<FString> FileContent)
+	static bool SaveStringArrayToFile(FString PathToFile, TArray<FString> FileContent)
 	{
 		IFileManager &FileManager = IFileManager::Get();
 
@@ -644,7 +649,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 	@param AppendFileToStringArray	If true, will insert the input FileContent before the file's content.
 	*/
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "AppendStringArrayToFile", Keywords = "FileSystemLibrary"), Category = "SystemFile I/O")
-	static FORCEINLINE bool AppendStringArrayToFile(FString PathToFile, TArray<FString> FileContent, bool AppendFileToStringArray)
+	static bool AppendStringArrayToFile(FString PathToFile, TArray<FString> FileContent, bool AppendFileToStringArray)
 	{
 		TArray<FString> ReturnFileContent;
 
@@ -676,7 +681,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 	@param PathToFile Path to get the extension from.
 	*/
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GetExtension", Keywords = "FileSystemLibrary"), Category = "SystemFile I/O")
-	static FORCEINLINE FString GetFileExtension(FString Path)
+	static FString GetFileExtension(FString Path)
 	{
 		return FPaths::GetExtension(Path, false);
 	}
@@ -685,7 +690,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 	@param PathToFile The path to extract the valid directory from.
 	*/
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GetDirectoryPath", Keywords = "FileSystemLibrary"), Category = "SystemFile I/O")
-	static FORCEINLINE FString GetFilePath(FString Path)
+	static FString GetFilePath(FString Path)
 	{
 		return FPaths::GetPath(Path);
 	}
@@ -695,7 +700,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 	@param IncludeExtension If true, the filename will be returned with its extension.
 	*/
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GetFilename", Keywords = "FileSystemLibrary"), Category = "SystemFile I/O")
-	static FORCEINLINE FString GetFileName(FString Path, bool IncludeExtension)
+	static FString GetFileName(FString Path, bool IncludeExtension)
 	{
 		if (!IncludeExtension)
 		{
@@ -716,7 +721,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 */
 
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "OpenFolderSelectDialog", Keywords = "FileSystemLibrary"), Category = "System File Dialogs")
-	static FORCEINLINE bool OpenFolderSelectDialog(FString &FolderPath, FString DialogTitle = "Select a folder", FString DefaultPath = "")
+	static bool OpenFolderSelectDialog(FString &FolderPath, FString DialogTitle = "Select a folder", FString DefaultPath = "")
 	{
 		if (GEngine)
 		{
@@ -820,7 +825,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 */
 
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "OpenFileMultiSelectDialog", Keywords = "FileSystemLibrary"), Category = "System File Dialogs")
-	static FORCEINLINE bool OpenFileMultiSelectDialog(TArray<FString> &FilePaths, FString DialogTitle = "Select a file", FString DefaultPath = "", bool AllowMultiSelect = false, FString FileTypes = "All Files (*.*)|*.*|")
+	static bool OpenFileMultiSelectDialog(TArray<FString> &FilePaths, FString DialogTitle = "Select a file", FString DefaultPath = "", bool AllowMultiSelect = false, FString FileTypes = "All Files (*.*)|*.*|")
 	{
 		if (GEngine)
 		{
@@ -931,7 +936,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 @param FileTypes		The file type filter (you can add as many as you need). The format is: [Type Name] (*.[Type Extension]*)|*.[Type Extension]*|
 */
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "OpenFileSelectDialog", Keywords = "FileSystemLibrary"), Category = "System File Dialogs")
-	static FORCEINLINE bool OpenFileSelectDialog(FString &FilePath, FString DialogTitle = "Select a file", FString DefaultPath = "", FString FileTypes = "All Files (*.*)|*.*|")
+	static bool OpenFileSelectDialog(FString &FilePath, FString DialogTitle = "Select a file", FString DefaultPath = "", FString FileTypes = "All Files (*.*)|*.*|")
 	{
 		TArray<FString> FilePaths;
 
@@ -951,7 +956,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 	@param FileTypes		The file type filter (you can add as many as you need). The format is: [Type Name] (*.[Type Extension]*)|*.[Type Extension]*|
 	*/
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "OpenSaveFileDialog", Keywords = "FileSystemLibrary"), Category = "System File Dialogs")
-	static FORCEINLINE bool OpenSaveFileDialog(FString &SaveToPath, FString DialogTitle = "Select a file", FString DefaultPath = "", FString DefaultFileName = "", FString FileTypes = "All Files (*.*)|*.*|")
+	static bool OpenSaveFileDialog(FString &SaveToPath, FString DialogTitle = "Select a file", FString DefaultPath = "", FString DefaultFileName = "", FString FileTypes = "All Files (*.*)|*.*|")
 	{
 		if (GEngine)
 		{
