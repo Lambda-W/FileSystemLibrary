@@ -49,5 +49,7 @@ public class FileSystemLibrary : ModuleRules
 				// ... add any modules that your module loads dynamically here ...
 			}
 			);
-	}
+
+        PublicDefinitions.Add("WINDOWS_IGNORE_PACKING_MISMATCH");
+    }
 }
