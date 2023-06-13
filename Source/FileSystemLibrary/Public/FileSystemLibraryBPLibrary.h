@@ -6,10 +6,13 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 
 #include "CoreMinimal.h"
+#include "DialogManager.h"
+#include "Win/DialogManagerWin.h"
+#include "Mac/DialogManagerMac.h"
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
 #include "HAL/FileManager.h"
-#include "HAL/PlatformFileManager.h"
+#include "HAL/PlatformFilemanager.h"
 #include "Misc/Paths.h"
 #include "Misc/FileHelper.h"
 #include "GenericPlatform/GenericPlatformFile.h"
@@ -41,9 +44,7 @@ struct FPathProperties
 	UPROPERTY(BlueprintReadOnly, Category = "PathProperties")
 	bool isReadOnly;
 
-
-
-	FPathProperties()	
+	FPathProperties()
 	{
 		CreationDate = FDateTime::MinValue();
 		AccessDate = FDateTime::MinValue();
@@ -73,7 +74,7 @@ class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 
 	/* This function will check to see if the specified file (folder) exist. You need to include the file extension. */
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "VerifyFile", Keywords = "FileSystemLibrary"), Category = "SystemFileOperations")
-		static FORCEINLINE bool VerifyFile(FString PathToFile = "")
+	static FORCEINLINE bool VerifyFile(FString PathToFile = "")
 	{
 		IPlatformFile &PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 
@@ -90,7 +91,7 @@ class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 
 	/* This function will copy a file from a path to another. You need to include the full path with extension for both input parameters. */
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "CopyFile", Keywords = "FileSystemLibrary"), Category = "System File Operations")
-		static FORCEINLINE bool CopyFile(FString PathToFile, FString DestinationFilePath = "")
+	static FORCEINLINE bool CopyFile(FString PathToFile, FString DestinationFilePath = "")
 	{
 
 		IPlatformFile &PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
@@ -109,7 +110,7 @@ class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 
 	/* This function will copy a file from a path to another. You need to include the full path with extension for both input parameters. */
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "MoveFile", Keywords = "FileSystemLibrary"), Category = "System File Operations")
-		static FORCEINLINE bool MoveFile(FString PathToFile, FString DestinationFilePath = "")
+	static FORCEINLINE bool MoveFile(FString PathToFile, FString DestinationFilePath = "")
 	{
 
 		IPlatformFile &PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
@@ -128,7 +129,7 @@ class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 
 	/* This function will rename the specified file. You need to include filename with extension for both input parameters. */
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "RenameFile", Keywords = "FileSystemLibrary"), Category = "System File Operations")
-		static FORCEINLINE bool RenameFile(FString PathToFile, FString NewFileName = "")
+	static FORCEINLINE bool RenameFile(FString PathToFile, FString NewFileName = "")
 	{
 		FString Path = FPaths::GetPath(PathToFile);
 		FString NewPathToFile = Path + "\\" + NewFileName;
@@ -143,7 +144,7 @@ class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 
 	/* This function will rename the specified file. You need to include filename with extension for both input parameters. */
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "DeleteFile", Keywords = "FileSystemLibrary"), Category = "System File Operations")
-		static FORCEINLINE bool DeleteFile(FString PathToFile)
+	static FORCEINLINE bool DeleteFile(FString PathToFile)
 	{
 		IPlatformFile &PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 
@@ -158,7 +159,6 @@ class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 		// Failure
 		return false;
 	}
-
 
 	/***** Directory Operations *****/
 
@@ -192,15 +192,15 @@ class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 	}
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "VerifyDirectory", Keywords = "FileSystemLibrary"), Category = "System Directory Operations")
-		static FORCEINLINE bool VerifyDirectory(const FString &PathToDirectory = "")
+	static FORCEINLINE bool VerifyDirectory(const FString &PathToDirectory = "")
 	{
 		IPlatformFile &PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 
 		// Does the directory exist?
 		if (!PlatformFile.DirectoryExists(*PathToDirectory))
 		{
-		// Directory doesn't exist
-		return false;
+			// Directory doesn't exist
+			return false;
 		}
 
 		// Directory exist
@@ -209,28 +209,28 @@ class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 
 	/* This function will the specified directory and all file/folders inside it. */
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "DeleteDirectory", Keywords = "FileSystemLibrary"), Category = "System Directory Operations")
-	static FORCEINLINE bool DeleteDirectory( FString PathToDirectory = "")
+	static FORCEINLINE bool DeleteDirectory(FString PathToDirectory = "")
 	{
 		IPlatformFile &PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 
 		// Does the directory exist?
 		if (PlatformFile.DirectoryExists(*PathToDirectory))
 		{
-				// If it does exist, delete it
-				if (PlatformFile.DeleteDirectoryRecursively(*PathToDirectory))
-				{
-					// Success
-					return true;
-				}
+			// If it does exist, delete it
+			if (PlatformFile.DeleteDirectoryRecursively(*PathToDirectory))
+			{
+				// Success
+				return true;
+			}
 		}
 
 		// Failure
 		return false;
 	}
 
-	/* This function will the specified directory and all file/folders inside it. */
+	/* This function will copy all files and folders from PathToDirectory to NewPathToDirectory. */
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "CopyDirectory", Keywords = "FileSystemLibrary"), Category = "System Directory Operations")
-		static FORCEINLINE bool CopyDirectory(FString PathToDirectory = "", FString NewPathToDirectory= "", bool AllowOvewrite = true)
+	static FORCEINLINE bool CopyDirectory(FString PathToDirectory = "", FString NewPathToDirectory = "", bool AllowOvewrite = true)
 	{
 		IPlatformFile &PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 
@@ -252,9 +252,9 @@ class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 		return false;
 	}
 
-	/* This function will the specified directory and all file/folders inside it. */
+	/* This function will move all files and folders from PathToDirectory to NewPathToDirectory. */
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "MoveDirectory", Keywords = "FileSystemLibrary"), Category = "System Directory Operations")
-		static FORCEINLINE bool MoveDirectory(FString PathToDirectory = "", FString NewPathToDirectory = "", bool AllowOvewrite = true)
+	static FORCEINLINE bool MoveDirectory(FString PathToDirectory = "", FString NewPathToDirectory = "", bool AllowOvewrite = true)
 	{
 		if (CopyDirectory(PathToDirectory, NewPathToDirectory, AllowOvewrite))
 		{
@@ -266,12 +266,11 @@ class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 		return false;
 	}
 
-
 	/***** File & Directory Operations *****/
 
 	/* This function will return the file's or folder's properties. */
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GetFileOrDirectoryProperties", Keywords = "FileSystemLibrary"), Category = "File System Library")
-	static FORCEINLINE bool GetFileOrDirectoryProperties(FPathProperties& Properties, FString Path = "")
+	static FORCEINLINE bool GetFileOrDirectoryProperties(FPathProperties &Properties, FString Path = "")
 	{
 		FFileStatData StatData;
 
@@ -299,7 +298,7 @@ class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 
 	/* This function will return the file's or folder's properties. */
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GetFileOrDirectorySize", Keywords = "FileSystemLibrary"), Category = "File System Library")
-		static FORCEINLINE bool GetFileOrDirectorySize(int& FileSizeBytes, FString Path = "")
+	static FORCEINLINE bool GetFileOrDirectorySize(int &FileSizeBytes, FString Path = "")
 	{
 		FPathProperties Properties;
 
@@ -314,7 +313,7 @@ class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 
 	/* This function will return the name of all files present in the specified directory. */
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GetFilesInDirectory", Keywords = "FileSystemLibrary"), Category = "File System Library")
-		static FORCEINLINE bool GetFilesInDirectory(TArray<FString>& Files, FString PathToDirectory)
+	static FORCEINLINE bool GetFilesInDirectory(TArray<FString> &Files, FString PathToDirectory)
 	{
 		IPlatformFile &PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 
@@ -326,8 +325,8 @@ class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 
 			// Check that the directory has been created
 			PlatformFile.FindFiles(ReturnFiles, *PathToDirectory, *ExtensionFilter);
-			
-			if(ReturnFiles.Num() > 0)
+
+			if (ReturnFiles.Num() > 0)
 			{
 				// Success
 				Files = ReturnFiles;
@@ -337,14 +336,13 @@ class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 
 		// No files were found
 		return false;
-		}
-
+	}
 
 	/***** File IO *****/
 
 	/* This function will load the content of the specified file to a string array. For text file, each array element represents a line from the document.*/
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "LoadTextFileToStringArray", Keywords = "FileSystemLibrary"), Category = "SystemFile I/O")
-		static FORCEINLINE bool LoadTextFileToStringArray(TArray<FString>&FileContent, FString PathToFile)
+	static FORCEINLINE bool LoadTextFileToStringArray(TArray<FString> &FileContent, FString PathToFile)
 	{
 		// Does the file exist?
 		if (VerifyFile(*PathToFile))
@@ -367,7 +365,7 @@ class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 
 	/* This function will load the content of the specified file to a string. For text file, each array element represents a line from the document.*/
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "InsertStringArrayToFile", Keywords = "FileSystemLibrary"), Category = "SystemFile I/O")
-		static FORCEINLINE bool InsertStringArrayToFile(FString PathToFile, TArray<FString>FileContent, int InsertAtIndex)
+	static FORCEINLINE bool InsertStringArrayToFile(FString PathToFile, TArray<FString> FileContent, int InsertAtIndex)
 	{
 		TArray<FString> ReturnFileContent;
 
@@ -386,7 +384,7 @@ class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 
 	/* This function will load the content of the specified file to a string array. For text file, each array element represents a line from the document.*/
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "LoadTextFileToString", Keywords = "FileSystemLibrary"), Category = "SystemFile I/O")
-		static FORCEINLINE bool LoadTextFileToString(FString&FileContent, FString PathToFile)
+	static FORCEINLINE bool LoadTextFileToString(FString &FileContent, FString PathToFile)
 	{
 		// Does the file exist?
 		if (VerifyFile(*PathToFile))
@@ -399,7 +397,7 @@ class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 			{
 				FString ReturnString;
 
-				for(int i = 0; i < ReturnFileContent.Num(); i++)
+				for (int i = 0; i < ReturnFileContent.Num(); i++)
 				{
 					ReturnString = ReturnFileContent[i] + '\n';
 				}
@@ -416,7 +414,7 @@ class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 
 	/* This function will load the content of the specified file to a string array. */
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "SaveStringArrayToFile", Keywords = "FileSystemLibrary"), Category = "SystemFile I/O")
-		static FORCEINLINE bool SaveStringArrayToFile(FString PathToFile, TArray<FString>FileContent)
+	static FORCEINLINE bool SaveStringArrayToFile(FString PathToFile, TArray<FString> FileContent)
 	{
 		IFileManager &FileManager = IFileManager::Get();
 
@@ -438,52 +436,51 @@ class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 
 	/* This function will append the input string array to the file's content. The AppendFileToStringArray param will insert the input content before the file's.  */
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "AppendStringArrayToFile", Keywords = "FileSystemLibrary"), Category = "SystemFile I/O")
-		static FORCEINLINE bool AppendStringArrayToFile(FString PathToFile, TArray<FString>FileContent, bool AppendFileToStringArray)
+	static FORCEINLINE bool AppendStringArrayToFile(FString PathToFile, TArray<FString> FileContent, bool AppendFileToStringArray)
 	{
-			TArray<FString> ReturnFileContent;
+		TArray<FString> ReturnFileContent;
 
-			if (LoadTextFileToStringArray(ReturnFileContent, PathToFile))
+		if (LoadTextFileToStringArray(ReturnFileContent, PathToFile))
+		{
+			if (AppendFileToStringArray)
 			{
-				if (AppendFileToStringArray)
-				{
-					TArray<FString> InFileContent = FileContent;
-					InFileContent.Append(ReturnFileContent);
-					ReturnFileContent = InFileContent;
-				}
-				else
-				{
-					ReturnFileContent.Append(FileContent);
-				}
-
-				if (SaveStringArrayToFile(PathToFile, ReturnFileContent))
-				{
-					return true;
-				}
+				TArray<FString> InFileContent = FileContent;
+				InFileContent.Append(ReturnFileContent);
+				ReturnFileContent = InFileContent;
+			}
+			else
+			{
+				ReturnFileContent.Append(FileContent);
 			}
 
-			return false;
-	}
+			if (SaveStringArrayToFile(PathToFile, ReturnFileContent))
+			{
+				return true;
+			}
+		}
 
+		return false;
+	}
 
 	/***** Path Utilities *****/
 
 	/* This function will return the extension for the specified file. */
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GetFileExtension", Keywords = "FileSystemLibrary"), Category = "SystemFile I/O")
-		static FORCEINLINE FString GetFileExtension(FString PathToFile)
+	static FORCEINLINE FString GetFileExtension(FString PathToFile)
 	{
 		return FPaths::GetExtension(PathToFile, false);
 	}
 
 	/* This function will return the specified file's path. */
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GetFilePath", Keywords = "FileSystemLibrary"), Category = "SystemFile I/O")
-		static FORCEINLINE FString GetFilePath(FString PathToFile)
+	static FORCEINLINE FString GetFilePath(FString PathToFile)
 	{
 		return FPaths::GetPath(PathToFile);
 	}
 
 	/* This function will return the specified file's name. */
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GetFileName", Keywords = "FileSystemLibrary"), Category = "SystemFile I/O")
-		static FORCEINLINE FString GetFileName(FString PathToFile, bool IncludeExtension)
+	static FORCEINLINE FString GetFileName(FString PathToFile, bool IncludeExtension)
 	{
 		if (!IncludeExtension)
 		{
@@ -496,101 +493,181 @@ class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 		}
 	}
 
-
 	/***** File Dialogs *****/
 
 	/* This will open a Folder Select dialog on any desktop platform supported by Unreal Engine. It also ensures that the returned path always ends with "/". */
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "OpenFolderSelectDialog", Keywords = "FileSystemLibrary"), Category = "System File Dialogs")
-	static FORCEINLINE bool OpenFolderSelectDialog(FString& FolderPath, FString DialogTitle = "Select a folder", FString DefaultPath = "")
+	static FORCEINLINE bool OpenFolderSelectDialog(FString &FolderPath, FString DialogTitle = "Select a folder", FString DefaultPath = "")
 	{
-
-		const void* ParentWindowHandle = GEngine->GameViewport->GetWindow()->GetNativeWindow()->GetOSWindowHandle();
-		IDesktopPlatform *DesktopPlatform = FDesktopPlatformModule::Get();
-		if (!DesktopPlatform || !ParentWindowHandle)
+		if (GEngine && GEngine->GameViewport)
 		{
-			// Couldn't initialise the platform's references
-			return false;
-		}
+			const void *ParentWindowHandle = GEngine->GameViewport->GetWindow()->GetNativeWindow()->GetOSWindowHandle();
 
-		else
-		{
-			FString ReturnedPath;
-
-			// Opens the dialog window
-			if (DesktopPlatform->OpenDirectoryDialog(ParentWindowHandle, DialogTitle, DefaultPath, ReturnedPath))
+			if (ParentWindowHandle)
 			{
-				// Checks that the returned path isn't empty
-				if (ReturnedPath != FString(""))
+				FString ReturnPath;
+
+// Use IDesktopPlatform (editor and dev only)
+#if PLATFORM_LINUX
+				IDesktopPlatform *DesktopPlatform = FDesktopPlatformModule::Get();
+				if (!DesktopPlatform || !ParentWindowHandle)
 				{
-					// Checks if the return path ends with "/"
-					if (!ReturnedPath.EndsWith(TEXT("/")))
+					// Couldn't initialise the platform's references
+					return false;
+				}
+
+				else
+				{
+					// Opens the dialog window
+					if (DesktopPlatform->OpenDirectoryDialog(ParentWindowHandle, DialogTitle, DefaultPath, ReturnPath))
 					{
-						ReturnedPath.Append(TEXT("/"));
+						// Checks that the returned path isn't empty
+						if (ReturnPath != FString(""))
+						{
+							// Checks if the return path ends with "/"
+							if (!ReturnPath.EndsWith(TEXT("/")))
+							{
+								ReturnPath.Append(TEXT("/"));
+							}
+
+							// Success
+							FolderPath = ReturnPath;
+							return true;
+						}
+					}
+					return false;
+				}
+#endif
+
+				// Use DialogManager.h for both windows and mac
+				DialogManager *DialogMan;
+#if PLATFORM_WINDOWS
+
+				DialogMan = new DialogManagerWin();
+
+#endif
+
+#if PLATFORM_MAC
+
+				DialogMan = new DialogManagerMac();
+#endif
+
+				if (DialogMan)
+				{
+					if (DialogMan->OpenDirectoryDialog(ParentWindowHandle, DialogTitle, DefaultPath, ReturnPath))
+					{
+						if (ReturnPath != TEXT(""))
+						{
+							if (!ReturnPath.EndsWith("/", ESearchCase::IgnoreCase))
+							{
+								ReturnPath.Append("/");
+							}
+							FolderPath = ReturnPath;
+							delete DialogMan;
+							return true;
+						}
 					}
 
-					// Success
-					FolderPath = ReturnedPath;
-					return true;
+					delete DialogMan;
 				}
 			}
 		}
 
-		// Failure
 		return false;
 	}
 
 	/*This will open a File Select dialog on any platform supported by Unreal Engine. The FilePaths return value contains the paths for files selected, their names and its extensions. */
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "OpenFileMultiSelectDialog", Keywords = "FileSystemLibrary"), Category = "System File Dialogs")
-	static FORCEINLINE bool OpenFileMultiSelectDialog(TArray<FString>& FilePaths, FString DialogTitle = "Select a file", FString DefaultPath = "", bool AllowMultiSelect = false, FString FileTypes = "All Files (*.*)|*.*|")
+	static FORCEINLINE bool OpenFileMultiSelectDialog(TArray<FString> &FilePaths, FString DialogTitle = "Select a file", FString DefaultPath = "", bool AllowMultiSelect = false, FString FileTypes = "All Files (*.*)|*.*|")
 	{
-
-		const void* ParentWindowHandle = GEngine->GameViewport->GetWindow()->GetNativeWindow()->GetOSWindowHandle();
-		IDesktopPlatform *DesktopPlatform = FDesktopPlatformModule::Get();
-		if (!DesktopPlatform || !ParentWindowHandle)
+		if (GEngine && GEngine->GameViewport)
 		{
-			// Couldn't initialise the platform's references
-			return false;
-		}
+			const void *ParentWindowHandle = GEngine->GameViewport->GetWindow()->GetNativeWindow()->GetOSWindowHandle();
 
-		else
-		{
-			TArray<FString> pathsToFiles;
-			EFileDialogFlags::Type Flags;
+			if (ParentWindowHandle)
+			{
+				TArray<FString> pathsToFiles;
 
-			// Set the flag based on param
-			if (AllowMultiSelect)
-			{
-				Flags = EFileDialogFlags::Type::Multiple;
-			}
-			else
-			{
-				Flags = EFileDialogFlags::Type::None;
-			}
-
-			// Opens the dialog window
-			if (DesktopPlatform->OpenFileDialog(ParentWindowHandle, DialogTitle, DefaultPath, FString(""), FileTypes, Flags, pathsToFiles))
-			{
-				// Checks that there is at least 1 path to return
-				if (pathsToFiles.Num() > 0)
+// Use IDesktopPlatform (editor and dev only)
+#if PLATFORM_LINUX
+				IDesktopPlatform *DesktopPlatform = FDesktopPlatformModule::Get();
+				if (!DesktopPlatform || !ParentWindowHandle)
 				{
-					// Checks that the first path isn't empty (this could be improved)
-					if (pathsToFiles[0] != "")
+					// Couldn't initialise the platform's references
+					return false;
+				}
+
+				else
+				{
+					EFileDialogFlags::Type Flags;
+
+					// Set the flag based on param
+					if (AllowMultiSelect)
 					{
-						// Success
-						FilePaths = pathsToFiles;
-						return true;
+						Flags = EFileDialogFlags::Type::Multiple;
 					}
+					else
+					{
+						Flags = EFileDialogFlags::Type::None;
+					}
+
+					// Opens the dialog window
+					if (DesktopPlatform->OpenFileDialog(ParentWindowHandle, DialogTitle, DefaultPath, FString(""), FileTypes, Flags, pathsToFiles))
+					{
+						// Checks that there is at least 1 path to return
+						if (pathsToFiles.Num() > 0)
+						{
+							// Checks that the first path isn't empty (this could be improved)
+							if (pathsToFiles[0] != "")
+							{
+								// Success
+								FilePaths = pathsToFiles;
+								return true;
+							}
+						}
+					}
+				}
+
+				// Failure
+				return false;
+#endif
+
+				// Use DialogManager.h for both windows and mac
+				DialogManager *DialogMan;
+#if PLATFORM_WINDOWS
+
+				DialogMan = new DialogManagerWin();
+
+#endif
+
+#if PLATFORM_MAC
+
+				DialogMan = new DialogManagerMac();
+#endif
+
+				if (DialogMan)
+				{
+					if (DialogMan->OpenFileDialog(ParentWindowHandle, DialogTitle, DefaultPath, TEXT(""), FileTypes, AllowMultiSelect, pathsToFiles))
+					{
+						if (pathsToFiles[0] != TEXT(""))
+						{
+							FilePaths = pathsToFiles;
+
+							delete DialogMan;
+							return true;
+						}
+					}
+
+					delete DialogMan;
 				}
 			}
 		}
-
-		// Failure
 		return false;
 	}
 
 	/*This will open a File Select dialog on any platform supported by Unreal Engine. The FilePath return value contain the path for file selected, its name and its extension. */
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "OpenFileSelectDialog", Keywords = "FileSystemLibrary"), Category = "System File Dialogs")
-		static FORCEINLINE bool OpenFileSelectDialog(FString& FilePath, FString DialogTitle = "Select a file", FString DefaultPath = "", FString FileTypes = "All Files (*.*)|*.*|")
+	static FORCEINLINE bool OpenFileSelectDialog(FString &FilePath, FString DialogTitle = "Select a file", FString DefaultPath = "", FString FileTypes = "All Files (*.*)|*.*|")
 	{
 		TArray<FString> FilePaths;
 
@@ -605,39 +682,79 @@ class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 
 	/*This will open a File Save dialog on any platform supported by Unreal Engine. The return value contains the path to the file selected, its name and extension.  */
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "OpenSaveFileDialog", Keywords = "FileSystemLibrary"), Category = "System File Dialogs")
-	static FORCEINLINE bool OpenSaveFileDialog(FString& SaveToPath, FString DialogTitle = "Select a file", FString DefaultPath = "", FString DefaultFileName = "", FString FileTypes = "All Files (*.*)|*.*|")
+	static FORCEINLINE bool OpenSaveFileDialog(FString &SaveToPath, FString DialogTitle = "Select a file", FString DefaultPath = "", FString DefaultFileName = "", FString FileTypes = "All Files (*.*)|*.*|")
 	{
-
-		const void* ParentWindowHandle = GEngine->GameViewport->GetWindow()->GetNativeWindow()->GetOSWindowHandle();
-		IDesktopPlatform *DesktopPlatform = FDesktopPlatformModule::Get();
-		if (!DesktopPlatform || !ParentWindowHandle)
+		if (GEngine && GEngine->GameViewport)
 		{
-			// Couldn't initialise the platform's references
-			return false;
-		}
-		else
-		{
-			FString ReturnedPath;
-			TArray<FString> pathsToFiles;
+			const void *ParentWindowHandle = GEngine->GameViewport->GetWindow()->GetNativeWindow()->GetOSWindowHandle();
 
-			// Opens the dialog window
-			if (DesktopPlatform->SaveFileDialog(ParentWindowHandle, DialogTitle, DefaultPath, DefaultFileName, FileTypes, EFileDialogFlags::Type::None, pathsToFiles))
+			if (ParentWindowHandle)
 			{
-				ReturnedPath = pathsToFiles[0];
 
-				// Check that the path isn't empty
-				if (ReturnedPath != FString(""))
+				TArray<FString> pathsToFiles;
+				FString ReturnedPath;
+
+// Use IDesktopPlatform (editor and dev only)
+#if PLATFORM_LINUX
+				IDesktopPlatform *DesktopPlatform = FDesktopPlatformModule::Get();
+				if (!DesktopPlatform || !ParentWindowHandle)
 				{
-					// Success
-					SaveToPath = ReturnedPath;
-					return true;
+					// Couldn't initialise the platform's references
+					return false;
+				}
+				else
+				{
+
+					// Opens the dialog window
+					if (DesktopPlatform->SaveFileDialog(ParentWindowHandle, DialogTitle, DefaultPath, DefaultFileName, FileTypes, EFileDialogFlags::Type::None, pathsToFiles))
+					{
+						ReturnedPath = pathsToFiles[0];
+
+						// Check that the path isn't empty
+						if (ReturnedPath != FString(""))
+						{
+							// Success
+							SaveToPath = ReturnedPath;
+							return true;
+						}
+					}
+				}
+
+				//Failure
+				return false;
+#endif
+
+				// Use DialogManager.h for both windows and mac
+				DialogManager *DialogMan;
+#if PLATFORM_WINDOWS
+
+				DialogMan = new DialogManagerWin();
+
+#endif
+
+#if PLATFORM_MAC
+
+				DialogMan = new DialogManagerMac();
+#endif
+
+				if (DialogMan)
+				{
+					if (DialogMan->SaveFileDialog(ParentWindowHandle, DialogTitle, DefaultPath, DefaultFileName, FileTypes, false, pathsToFiles))
+					{
+						if (pathsToFiles[0] != TEXT(""))
+						{
+							ReturnedPath = pathsToFiles[0];
+							delete DialogMan;
+
+							SaveToPath = ReturnedPath;
+							return true;
+						}
+					}
+
+					delete DialogMan;
 				}
 			}
 		}
-
-		//Failure
 		return false;
 	}
-
-
 };
