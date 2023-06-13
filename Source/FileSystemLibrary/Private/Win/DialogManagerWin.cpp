@@ -5,8 +5,10 @@
 
 #include "Win/DialogManagerWin.h"
 #if PLATFORM_WINDOWS
+#include "Windows/AllowWindowsPlatformTypes.h"
 #include "Windows/MinWindows.h"
 #include "Windows/COMPointer.h"
+#include "Windows/HideWindowsPlatformTypes.h"
 #endif
 #include "Misc/Paths.h"
 #include "Misc/Guid.h"
