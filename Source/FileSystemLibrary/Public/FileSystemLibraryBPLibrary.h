@@ -5,6 +5,12 @@
 
 #include "Kismet/BlueprintFunctionLibrary.h"
 
+#if WITH_EDITOR
+#include "Editor/MainFrame/Public/Interfaces/IMainFrameModule.h"
+#endif
+
+#include <string>
+
 #include "CoreMinimal.h"
 #include "DialogManager.h"
 #include "Win/DialogManagerWin.h"
@@ -80,7 +86,7 @@ class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 		@param	UseWorkingDirectory		If true, will use WorkingDirectory to start the executable in instead of its current directory.
 		@param	WorkingDirectory		Directory to start the executable in (required UseWorkingDirectory = true).
 		*/
-		UFUNCTION(BlueprintCallable, meta = (DisplayName = "CreateProcess", Keywords = "FileSystemLibrary"), Category = "process create execute")
+		UFUNCTION(BlueprintCallable, meta = (DisplayName = "CreateProcess", Keywords = "process create execute"), Category = "FileSystemLibrary")
 		static FORCEINLINE bool CreateProcess(FString PathToExecutable, FString Arguments, bool LaunchDetached, bool LaunchedHidden, bool LaunchReallyHidden, int PriorityModifier, bool UseWorkingDirectory, FString WorkingDirectory)
 	{
 		const TCHAR* tFilename = *PathToExecutable;
@@ -89,6 +95,37 @@ class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 		int32 PrioMod = (int32)PriorityModifier;
 		FPlatformProcess::CreateProc(tFilename, tArguments, LaunchDetached, LaunchedHidden, LaunchReallyHidden, nullptr, PrioMod, tWorkingDirectory, nullptr);
 		return true;
+	}
+
+	/** Opens Windows' explorer or Mac OS' finder at the specified path.
+	* @param Path		Path to the directory.
+	*/
+	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Open Directory", Keywords = "explorer finder folder directory"), Category = "FileSystemLibrary")
+		static void OpenDirectory(FString Path)
+	{
+		if (VerifyDirectory(Path))
+		{
+			FString ValidPath = Path;
+
+			FString Fcommand;
+
+#if PLATFORM_WINDOWS
+			ValidPath.ReplaceCharInline('/', '\\', ESearchCase::IgnoreCase);
+
+			Fcommand = TEXT("explorer ");
+#endif
+
+#if PLATFORM_MAC
+ValidPath.InsertAt(0,'"');
+ValidPath.InsertAt(ValidPath.Len(), '"');
+			Fcommand = TEXT("open ");
+#endif
+
+			Fcommand.Append(ValidPath);
+			std::string command = TCHAR_TO_UTF8(*Fcommand);
+
+			system(command.c_str());
+		}
 	}
 
 	/***** File Operations *****/
@@ -681,9 +718,27 @@ class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "OpenFolderSelectDialog", Keywords = "FileSystemLibrary"), Category = "System File Dialogs")
 	static FORCEINLINE bool OpenFolderSelectDialog(FString &FolderPath, FString DialogTitle = "Select a folder", FString DefaultPath = "")
 	{
-		if (GEngine && GEngine->GameViewport)
+		if (GEngine)
 		{
-			const void *ParentWindowHandle = GEngine->GameViewport->GetWindow()->GetNativeWindow()->GetOSWindowHandle();
+			const void *ParentWindowHandle = nullptr;
+
+			//If in game game
+			if (GEngine->GameViewport)
+			{
+				ParentWindowHandle = GEngine->GameViewport->GetWindow()->GetNativeWindow()->GetOSWindowHandle();
+			}
+
+			// If in editor
+#if WITH_EDITOR
+
+			IMainFrameModule& MainFrameModule = FModuleManager::LoadModuleChecked<IMainFrameModule>(TEXT("MainFrame"));
+			const TSharedPtr<SWindow>& MainFrameParentWindow = MainFrameModule.GetParentWindow();
+
+			if (MainFrameParentWindow.IsValid() && MainFrameParentWindow->GetNativeWindow().IsValid())
+			{
+				ParentWindowHandle = MainFrameParentWindow->GetNativeWindow()->GetOSWindowHandle();
+			}
+#endif
 
 			if (ParentWindowHandle)
 			{
@@ -767,9 +822,27 @@ class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "OpenFileMultiSelectDialog", Keywords = "FileSystemLibrary"), Category = "System File Dialogs")
 	static FORCEINLINE bool OpenFileMultiSelectDialog(TArray<FString> &FilePaths, FString DialogTitle = "Select a file", FString DefaultPath = "", bool AllowMultiSelect = false, FString FileTypes = "All Files (*.*)|*.*|")
 	{
-		if (GEngine && GEngine->GameViewport)
+		if (GEngine)
 		{
-			const void *ParentWindowHandle = GEngine->GameViewport->GetWindow()->GetNativeWindow()->GetOSWindowHandle();
+			const void *ParentWindowHandle = nullptr;
+			
+			//If in game game
+			if (GEngine->GameViewport)
+			{
+				ParentWindowHandle = GEngine->GameViewport->GetWindow()->GetNativeWindow()->GetOSWindowHandle();
+			}
+
+			// If in editor
+			#if WITH_EDITOR
+
+			IMainFrameModule& MainFrameModule = FModuleManager::LoadModuleChecked<IMainFrameModule>(TEXT("MainFrame"));
+			const TSharedPtr<SWindow>& MainFrameParentWindow = MainFrameModule.GetParentWindow();
+
+			if (MainFrameParentWindow.IsValid() && MainFrameParentWindow->GetNativeWindow().IsValid())
+			{
+				ParentWindowHandle = MainFrameParentWindow->GetNativeWindow()->GetOSWindowHandle();
+			}
+			#endif
 
 			if (ParentWindowHandle)
 			{
@@ -880,9 +953,27 @@ class UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "OpenSaveFileDialog", Keywords = "FileSystemLibrary"), Category = "System File Dialogs")
 	static FORCEINLINE bool OpenSaveFileDialog(FString &SaveToPath, FString DialogTitle = "Select a file", FString DefaultPath = "", FString DefaultFileName = "", FString FileTypes = "All Files (*.*)|*.*|")
 	{
-		if (GEngine && GEngine->GameViewport)
+		if (GEngine)
 		{
-			const void *ParentWindowHandle = GEngine->GameViewport->GetWindow()->GetNativeWindow()->GetOSWindowHandle();
+			const void *ParentWindowHandle = nullptr;
+
+			//If in game game
+			if (GEngine->GameViewport)
+			{
+				ParentWindowHandle = GEngine->GameViewport->GetWindow()->GetNativeWindow()->GetOSWindowHandle();
+			}
+
+			// If in editor
+#if WITH_EDITOR
+
+			IMainFrameModule& MainFrameModule = FModuleManager::LoadModuleChecked<IMainFrameModule>(TEXT("MainFrame"));
+			const TSharedPtr<SWindow>& MainFrameParentWindow = MainFrameModule.GetParentWindow();
+
+			if (MainFrameParentWindow.IsValid() && MainFrameParentWindow->GetNativeWindow().IsValid())
+			{
+				ParentWindowHandle = MainFrameParentWindow->GetNativeWindow()->GetOSWindowHandle();
+			}
+#endif
 
 			if (ParentWindowHandle)
 			{
