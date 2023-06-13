@@ -10,7 +10,7 @@
 	"DocsURL": "www.samuelmetters.co.uk/filesystemlibrary",
 	"MarketplaceURL": "https://www.unrealengine.com/marketplace/en-US/product/c8061306eb9b4518ad9183e8a27bee04",
 	"SupportURL": "www.lambdaworks.co.uk",
-	"EngineVersion": "4.23.0",
+	"EngineVersion": "5.0.0",
 	"CanContainContent": true,
 	"Installed": true,
 	"Modules": [
@@ -20,9 +20,7 @@
 			"LoadingPhase": "PreLoadingScreen",
 			"WhitelistPlatforms": [
 				"Win64",
-				"Win32",
-				"Mac",
-				"Linux"
+				"Mac"
 			]
 		}
 	]

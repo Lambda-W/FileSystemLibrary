@@ -548,7 +548,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 		{
 			TArray<FString> ReturnFileContent;
 
-			FFileHelper::LoadFileToStringArray(ReturnFileContent, *PathToFile, FFileHelper::EHashOptions::None);
+			FFileHelper::LoadFileToStringArray(ReturnFileContent, *PathToFile);
 
 			if (ReturnFileContent.Num() > 0)
 			{
@@ -597,7 +597,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 		{
 			TArray<FString> ReturnFileContent;
 
-			FFileHelper::LoadFileToStringArray(ReturnFileContent, *PathToFile, FFileHelper::EHashOptions::None);
+			FFileHelper::LoadFileToStringArray(ReturnFileContent, *PathToFile);
 
 			if (ReturnFileContent.Num() > 0)
 			{
