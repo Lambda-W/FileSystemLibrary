@@ -20,7 +20,9 @@
 			"LoadingPhase": "PreLoadingScreen",
 			"WhitelistPlatforms": [
 				"Win64",
-				"Mac"
+				"Win32",
+				"Mac",
+				"Linux"
 			]
 		}
 	]
