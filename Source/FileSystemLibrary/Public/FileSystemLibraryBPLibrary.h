@@ -29,6 +29,7 @@
 #include "GenericPlatform/GenericPlatformFile.h"
 #include "Developer/DesktopPlatform/Public/IDesktopPlatform.h"
 #include "Developer/DesktopPlatform/Public/DesktopPlatformModule.h"
+#include "Kismet/BlueprintAsyncActionBase.h"
 #include "Widgets/SWindow.h"
 #include "FileSystemLibraryBPLibrary.generated.h"
 
@@ -80,58 +81,6 @@ UCLASS()
 class FILESYSTEMLIBRARY_API UFileSystemLibraryBPLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_UCLASS_BODY()
-
-		/* Creates a new process and its primary thread. The new process runs the specified executable file in the security context of the calling process. 
-		@param	PathToExecutable		The path to the executable to run.
-		@param	Arguments				Any command line argument to run when executing.
-		@param	LaunchDetached			If true, the process will have its own window.
-		@param	LaunchedHidden			If true, the new process will be minimized in the task bar
-		@param	LaunchReallyHidden		If true, the new process will not have a window or be in the task bar
-		@param	PriorityModifier		2 idle, -1 low, 0 normal, 1 high, 2 higher
-		@param	UseWorkingDirectory		If true, will use WorkingDirectory to start the executable in instead of its current directory.
-		@param	WorkingDirectory		Directory to start the executable in (required UseWorkingDirectory = true).
-		*/
-		UFUNCTION(BlueprintCallable, meta = (DisplayName = "CreateProcess", Keywords = "process create execute"), Category = "FileSystemLibrary")
-		static bool CreateProcess(FString PathToExecutable, FString Arguments, bool LaunchDetached, bool LaunchedHidden, bool LaunchReallyHidden, int PriorityModifier, bool UseWorkingDirectory, FString WorkingDirectory)
-	{
-		const TCHAR* tFilename = *PathToExecutable;
-		const TCHAR* tArguments = *Arguments;
-		const TCHAR* tWorkingDirectory = (UseWorkingDirectory) ? *WorkingDirectory : nullptr;
-		int32 PrioMod = (int32)PriorityModifier;
-		FPlatformProcess::CreateProc(tFilename, tArguments, LaunchDetached, LaunchedHidden, LaunchReallyHidden, nullptr, PrioMod, tWorkingDirectory, nullptr);
-		return true;
-	}
-
-	/** Opens Windows' explorer or Mac OS' finder at the specified path.
-	* @param Path		Path to the directory.
-	*/
-	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Open Directory", Keywords = "explorer finder folder directory"), Category = "FileSystemLibrary")
-		static void OpenDirectory(FString Path)
-	{
-		if (VerifyDirectory(Path))
-		{
-			FString ValidPath = Path;
-
-			FString Fcommand;
-
-#if PLATFORM_WINDOWS
-			ValidPath.ReplaceCharInline('/', '\\', ESearchCase::IgnoreCase);
-
-			Fcommand = TEXT("explorer ");
-#endif
-
-#if PLATFORM_MAC
-ValidPath.InsertAt(0,'"');
-ValidPath.InsertAt(ValidPath.Len(), '"');
-			Fcommand = TEXT("open ");
-#endif
-
-			Fcommand.Append(ValidPath);
-			std::string command = TCHAR_TO_UTF8(*Fcommand);
-
-			system(command.c_str());
-		}
-	}
 
 	/***** File Operations *****/
 
@@ -361,6 +310,39 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 
 	/***** File & Directory Operations *****/
 
+	
+	
+	/** Opens Windows' explorer or Mac OS' finder at the specified path.
+	* @param Path		Path to the directory.
+	*/
+	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Open Directory", Keywords = "explorer finder folder directory"), Category = "File System Library")
+		static void OpenDirectory(FString Path)
+	{
+		if (VerifyDirectory(Path))
+		{
+			FString ValidPath = Path;
+
+			FString Fcommand;
+
+#if PLATFORM_WINDOWS
+			ValidPath.ReplaceCharInline('/', '\\', ESearchCase::IgnoreCase);
+
+			Fcommand = TEXT("explorer ");
+#endif
+
+#if PLATFORM_MAC
+			ValidPath.InsertAt(0,'"');
+			ValidPath.InsertAt(ValidPath.Len(), '"');
+			Fcommand = TEXT("open ");
+#endif
+
+			Fcommand.Append(ValidPath);
+			std::string command = TCHAR_TO_UTF8(*Fcommand);
+
+			system(command.c_str());
+		}
+	}
+	
 	/* This function will return the file's or folder's properties. 
 	@param	Path		Path to the file (including extension).
 	@return	Properties	The file's property.
@@ -548,7 +530,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 		{
 			TArray<FString> ReturnFileContent;
 
-			FFileHelper::LoadFileToStringArray(ReturnFileContent, *PathToFile, FFileHelper::EHashOptions::None);
+			FFileHelper::LoadFileToStringArray(ReturnFileContent, *PathToFile);
 
 			if (ReturnFileContent.Num() > 0)
 			{
@@ -597,7 +579,7 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 		{
 			TArray<FString> ReturnFileContent;
 
-			FFileHelper::LoadFileToStringArray(ReturnFileContent, *PathToFile, FFileHelper::EHashOptions::None);
+			FFileHelper::LoadFileToStringArray(ReturnFileContent, *PathToFile);
 
 			if (ReturnFileContent.Num() > 0)
 			{
@@ -1049,4 +1031,102 @@ ValidPath.InsertAt(ValidPath.Len(), '"');
 		}
 		return false;
 	}
+	
+	/***** Process operations *****/
+	
+	/* Creates a new process and its primary thread. The new process runs the specified executable file in the security context of the calling process.
+		@param	PathToExecutable		The path to the executable to run.
+		@param	Arguments				Any command line argument to run when executing.
+		@param	LaunchDetached			If true, the process will have its own window.
+		@param	LaunchedHidden			If true, the new process will be minimized in the task bar
+		@param	LaunchReallyHidden		If true, the new process will not have a window or be in the task bar
+		@param	PriorityModifier		2 idle, -1 low, 0 normal, 1 high, 2 higher
+		@param	UseWorkingDirectory		If true, will use WorkingDirectory to start the executable in instead of its current directory.
+		@param	WorkingDirectory		Directory to start the executable in (required UseWorkingDirectory = true).
+		@param ProcessID				The created process' ID, use this to track its execution.
+	*/
+	UFUNCTION(BlueprintCallable, meta = (DisplayName = "CreateProcess", Keywords = "FileSystemLibrary"), Category = "Process")
+	static bool CreateProcess(FString PathToExecutable, FString Arguments, bool LaunchDetached, bool LaunchedHidden, bool LaunchReallyHidden, int PriorityModifier, bool UseWorkingDirectory, FString WorkingDirectory, int32& ProcessID)
+	{
+		const TCHAR* tFilename = *PathToExecutable;
+		const TCHAR* tArguments = *Arguments;
+		const TCHAR* tWorkingDirectory = (UseWorkingDirectory) ? *WorkingDirectory : nullptr;
+		int32 PrioMod = (int32)PriorityModifier;
+		uint32 tProcessID = 0;
+		FProcHandle ProcessHandle;
+
+		#if PLATFORM_WINDOWS
+		ProcessHandle = FWindowsPlatformProcess::CreateProc(tFilename, tArguments, LaunchDetached, LaunchedHidden, LaunchReallyHidden, &tProcessID, PrioMod, tWorkingDirectory, nullptr, nullptr);
+		#elif PLATFORM_MAC
+		ProcessHandle = FMacPlatformProcess::CreateProc(tFilename, tArguments, LaunchDetached, LaunchedHidden, LaunchReallyHidden, &tProcessID, PrioMod, tWorkingDirectory, nullptr, nullptr);
+		#endif
+		
+		ProcessID = -1;
+		if(tProcessID)
+		{
+			ProcessID = tProcessID;
+		}
+		
+		return true;
+	}
+	
+	/* Returns whether or not a specific process is running or not.
+		@param ProcessID	The ID of the process to query.
+	*/
+	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (DisplayName = "IsProcessRunning", Keywords = "FileSystemLibrary"), Category = "Process")
+	static bool IsProcessRunning(int32 ProcessID)
+	{
+		return FPlatformProcess::IsApplicationRunning(ProcessID);
+	}	
+	
+	/* Returns the name of the process.
+		@param ProcessID	The ID of the process to query.
+	*/
+	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (DisplayName = "GetProcessName", Keywords = "FileSystemLibrary"), Category = "Process")
+	static FString GetProcessName(int32 ProcessID)
+	{
+		return FPlatformProcess::GetApplicationName(ProcessID);
+	}
+};
+
+/***** AsynAction to launch a process and trigger a callback when it finishes. *****/
+UCLASS()
+class UCreateProcessWithCallback : public UBlueprintAsyncActionBase
+{
+	GENERATED_BODY()
+
+public:
+	
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCompleted);
+	UPROPERTY(BlueprintAssignable)
+	FOnCompleted Completed;
+
+	/* Same as CreateProcess but has an output pin that executes when the process has ended. 
+	Use with caution, this might cause performance issues as we are checking whether the process
+	is running every tick.
+
+		@param	PathToExecutable		The path to the executable to run.
+		@param	Arguments				Any command line argument to run when executing.
+		@param	LaunchDetached			If true, the process will have its own window.
+		@param	LaunchedHidden			If true, the new process will be minimized in the task bar
+		@param	LaunchReallyHidden		If true, the new process will not have a window or be in the task bar
+		@param	PriorityModifier		2 idle, -1 low, 0 normal, 1 high, 2 higher
+		@param	UseWorkingDirectory		If true, will use WorkingDirectory to start the executable in instead of its current directory.
+		@param	WorkingDirectory		Directory to start the executable in (required UseWorkingDirectory = true).
+	*/
+	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true", DisplayName = "CreateProcessWithCallback", Keywords = "process create execute"), Category = "FileSystemLibrary")
+	static UCreateProcessWithCallback* CreateProcessWithCallback(UObject* WorldContextObj, FString PathToExecutable, FString Arguments, bool LaunchDetached, bool LaunchedHidden, bool LaunchReallyHidden, int PriorityModifier, bool UseWorkingDirectory, FString WorkingDirectory);
+
+	// UBlueprintAsyncActionBase interface
+	virtual void Activate() override;
+	// End of UBlueprintAsyncActionBase interface
+
+	private:
+	UFUNCTION()
+	void bIsProcessRunning();
+
+
+	UObject* WorldContextObj;
+	
+	uint32 ProcessID;
 };
