@@ -1,0 +1,29 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "FileSystemLibrary",
+	"Description": "Open, Save, Copy, Move and delete files and directories in tranquillity!",
+	"Category": "File System",
+	"CreatedBy": "LambdaWorks",
+	"CreatedByURL": "www.samuelmetters.co.uk/filesystemlibrary",
+	"DocsURL": "www.samuelmetters.co.uk/filesystemlibrary",
+	"MarketplaceURL": "",
+	"SupportURL": "www.lambdaworks.co.uk",
+	"EngineVersion": "4.20.0",
+	"CanContainContent": true,
+	"Installed": true,
+	"Modules": [
+		{
+			"Name": "FileSystemLibrary",
+			"Type": "Runtime",
+			"LoadingPhase": "PreLoadingScreen",
+			"WhitelistPlatforms": [
+				"Win64",
+				"Win32",
+				"Mac",
+				"Linux"
+			]
+		}
+	]
+}
