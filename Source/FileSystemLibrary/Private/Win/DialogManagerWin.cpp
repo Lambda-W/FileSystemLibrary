@@ -31,8 +31,9 @@ bool DialogManagerWin::OpenFileDialog(const void* ParentWindowHandle, const FStr
     #if PLATFORM_WINDOWS
 	int32 dummy = 0;
 	return FileDialogShared(false, ParentWindowHandle, DialogTitle, DefaultPath, DefaultFile, FileTypes, MultipleFiles, OutFilenames, dummy);
-#endif
+#else
     return false;
+#endif
 }
 
 bool DialogManagerWin::SaveFileDialog(const void* ParentWindowHandle, const FString& DialogTitle, const FString& DefaultPath, const FString& DefaultFile, const FString& FileTypes, bool MultipleFiles, TArray<FString>& OutFilenames)
@@ -40,8 +41,9 @@ bool DialogManagerWin::SaveFileDialog(const void* ParentWindowHandle, const FStr
     #if PLATFORM_WINDOWS
 	int32 dummy = 0;
 	return FileDialogShared(true, ParentWindowHandle, DialogTitle, DefaultPath, DefaultFile, FileTypes, MultipleFiles, OutFilenames, dummy);
-#endif
+#else
     return false;
+#endif
 }
 
 bool DialogManagerWin::OpenDirectoryDialog(const void* ParentWindowHandle, const FString& DialogTitle, const FString& DefaultPath, FString& OutFolderName)
