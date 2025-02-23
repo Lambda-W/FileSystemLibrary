@@ -325,9 +325,8 @@ class FILESYSTEMLIBRARY_API UFileSystemLibraryBPLibrary : public UBlueprintFunct
 			FString Fcommand;
 
 #if PLATFORM_WINDOWS
-			const FString Frontslash = "/";
-			const FString Backslash = "\\";
-			ValidPath = ValidPath.Replace(*Frontslash, *Backslash, ESearchCase::IgnoreCase);
+			ValidPath.ReplaceCharInline('/', '\\', ESearchCase::IgnoreCase);
+
 			Fcommand = TEXT("explorer ");
 #endif
 
